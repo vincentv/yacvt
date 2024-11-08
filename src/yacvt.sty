@@ -1,0 +1,334 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{yacvt}[2024-11-28 v0.0.1 yet another curriculum vitae template]
+
+% =========================
+% Package Dependencies
+% =========================
+\RequirePackage{etoolbox}
+\RequirePackage[left=1.25cm,right=1.25cm,top=1.25cm,bottom=1.25cm,columnsep=1.5em]{geometry}
+\RequirePackage{xcolor}
+\RequirePackage{fontspec}
+\RequirePackage{enumitem}
+\RequirePackage{fancyhdr}
+\RequirePackage[fixed]{fontawesome5}
+\RequirePackage{xifthen}
+\RequirePackage{xparse}
+
+% =========================
+% Package Options
+% =========================
+\newbool{isCV}        % Indicates if the document is a CV
+\newbool{isAnonymous} % Indicates if the document is anonymous
+
+\DeclareOption{cv}{\setbool{isCV}{true}}
+\DeclareOption{anonymous}{\setbool{isAnonymous}{true}}
+
+\ProcessOptions
+
+% =========================
+% Font Configuration
+% =========================
+\defaultfontfeatures{Ligatures=TeX}
+\setmainfont{Roboto}[
+Extension      = .ttf,
+UprightFont    = *-Regular,
+BoldFont       = *-Bold,
+ItalicFont     = *-Italic,
+BoldItalicFont = *-BoldItalic,
+Path           = "assets/fonts/"]
+
+\setsansfont{NotoSans}[
+Extension      = .ttf,
+UprightFont    = *-Regular,
+BoldFont       = *-Bold,
+ItalicFont     = *-Italic,
+BoldItalicFont = *-BoldItalic,
+Path           = "assets/fonts/"]
+
+
+\setmonofont{FiraCode}[
+Contextuals=Alternate,% Activate the calt feature
+Extension      = .ttf,
+UprightFont    = *-Regular,
+BoldFont       = *-Bold,
+Path           = "assets/fonts/"]
+
+\newfontfamily\emojifont{NotoEmoji}[
+Renderer=HarfBuzz,
+Extension      = .ttf,
+UprightFont    = *-Regular,
+BoldFont       = *-Bold,
+Path           = "assets/fonts/"]
+\newcommand{\textemoji}[1]{{\emojifont{#1}}}
+
+% =========================
+% Color Scheme (Nord Theme)
+% =========================
+% Dark background and text colors (shades 0-3)
+\definecolor{nord0}{HTML}{2E3440}   % Darkest background, used for deep contrast elements
+\definecolor{nord1}{HTML}{3B4252}   % Dark background for secondary elements
+\definecolor{nord2}{HTML}{434C5E}   % Medium dark background
+\definecolor{nord3}{HTML}{4C566A}   % Dark gray, used for subtle separators or borders
+
+% Light background and text colors (shades 4-6)
+\definecolor{nord4}{HTML}{D8DEE9}   % Light gray, used for subtle backgrounds or borders
+\definecolor{nord5}{HTML}{E5E9F0}   % Very light gray, secondary background
+\definecolor{nord6}{HTML}{ECEFF4}   % Lightest background, primary background color
+
+% Cool accent colors (shades 7-10)
+\definecolor{nord7}{HTML}{8FBCBB}   % Muted teal, used for subtle highlights
+\definecolor{nord8}{HTML}{88C0D0}   % Soft blue, used for interactive elements
+\definecolor{nord9}{HTML}{81A1C1}   % Medium blue, used for secondary interactive elements
+\definecolor{nord10}{HTML}{5E81AC}  % Deep blue, used for primary interactive elements like links
+
+% Semantic and accent colors (shades 11-15)
+\definecolor{nord11}{HTML}{BF616A}  % Red, used for errors or critical states
+\definecolor{nord12}{HTML}{D08770}  % Orange, used for warnings or attention-grabbing elements
+\definecolor{nord13}{HTML}{EBCB8B}  % Yellow, used for warnings or highlights
+\definecolor{nord14}{HTML}{A3BE8C}  % Green, used for success states or positive feedback
+\definecolor{nord15}{HTML}{B48EAD}  % Soft purple, used for decorative or special elements
+
+% Light theme color assignments
+\colorlet{backgroundPrimary}{nord6}     % Primary background (very light)
+\colorlet{backgroundSecondary}{nord5}   % Secondary background
+\colorlet{textPrimary}{nord0}           % Primary text (dark for readability)
+\colorlet{textSecondary}{nord1}         % Secondary text (dark gray)
+\colorlet{borderColor}{nord4}           % Borders and separators (light gray)
+\colorlet{accentColor1}{nord10}         % Accent 1 (links, section titles)
+\colorlet{accentColor2}{nord9}          % Accent 2 (subtitles, interactive elements)
+\colorlet{accentColor3}{nord7}          % Accent 3 (highlights, special elements)
+\colorlet{errorColor}{nord11}           % Errors or alerts
+\colorlet{warningColor}{nord13}         % Warnings
+\colorlet{successColor}{nord14}         % Success
+
+
+% =========================
+% Typography Styles
+% =========================
+\newcommand{\headFirstnameStyle}[1]{{\Huge\mdseries\upshape\textcolor{textSecondary}#1}}
+\newcommand{\headLastnameStyle}[1]{{\Huge\bfseries\scshape\textcolor{textPrimary}#1}}
+\newcommand{\headTitleStyle}[1]{{\small\mdseries\scshape\textcolor{accentColor1}#1}}
+\newcommand{\footerStyle}[1]{{\scriptsize\scshape\textcolor{textSecondary}#1}}
+
+\newcommand{\sectionStyle}[1]{\Large\bfseries\scshape\@applyPartialColor #1}
+\newcommand*{\entryTitleStyle}[1]{{\normalsize\bfseries\color{textPrimary} #1}}
+\newcommand*{\entryInstitutionStyle}[1]{{\footnotesize\scshape\color{textSecondary} #1}}
+\newcommand*{\entryDateStyle}[1]{{\small\slshape\color{accentColor1} #1}}
+\newcommand*{\entryLocationStyle}[1]{{\footnotesize\slshape\color{textSecondary} #1}}
+\newcommand*{\entryDescriptionStyle}[1]{{\small\upshape\color{textPrimary} #1}}
+\newcommand*{\entryOptionalDescriptionStyle}[1]{{\footnotesize\upshape\slshape\color{textSecondary} #1}}
+
+% =========================
+% Setup
+% =========================
+\AtEndPreamble{
+  \RequirePackage{hyperref}
+  \hypersetup{
+    breaklinks,
+    pdfborder     = 0 0 0,
+    pdfpagemode   = UseNone,
+    pdfstartpage  = 1,
+    bookmarksopen = false,
+    bookmarksdepth= 0,% to show sections and subsections
+    pdfauthor     = \notbool{isAnonymous}{\@author}{},
+    pdftitle      = \@title,  %\notblank does not expand argument automatically
+    pdfsubject    = \notbool{isAnonymous}{{curriculum vit\ae{} of \@author}}{},
+    pdfkeywords   = {
+      curriculum vit\ae{},
+      r\'{e}sum\'{e},
+      \notbool{isAnonymous}{\@author,}
+      \@jobtitle,
+      \ifdefined\@jobstatus\@jobstatus,\fi
+      \@keywords
+    }
+  }
+  \fancypagestyle{plain}{%
+    \fancyhf{}% clear all header and footer fields
+    \fancyfoot[C]{\ifthenelse{\isempty{\@title}}{}{\footerStyle{\protect\@title}}}
+    \fancyfoot[R]{\footerStyle{\thepage/\protect\NoHyper\pageref{lastpage}\protect\endNoHyper}}
+    \renewcommand{\headrulewidth}{0pt}%
+    \renewcommand{\footrulewidth}{0pt}
+  }
+}
+
+\AtBeginDocument{%
+  \pagestyle{plain}
+  \pagecolor{backgroundPrimary}
+  \color{textPrimary}\small
+}
+
+\ifbool{isCV}{
+  \AtBeginDocument{%
+    \setlength{\parindent}{0pt}
+    \setlength{\leftmargini}{8pt}
+    \setlist{nosep}
+    \setlist[itemize]{label=\Uchar"2022}
+  }
+}
+
+\AtEndDocument{\label{lastpage}}
+
+% =========================
+% Custom Commands and Macros
+% =========================
+\renewcommand{\author}[2]{\def\@firstname{#1}\def\@lastname{#2}\def\@author{#1~#2}\updateTitle}
+\newcommand{\jobtitle}[1]{\def\@jobtitle{#1}\updateTitle}
+\newcommand{\jobstatus}[1]{\def\@jobstatus{#1}\updateTitle}
+\newcommand{\keywords}[1]{\def\@keywords{#1}}
+
+\newcommand*{\mobile}[1]{\def\@mobile{#1}}
+\newcommand*{\address}[1]{\def\@address{#1}}
+\newcommand*{\email}[1]{\def\@email{#1}}
+\newcommand*{\github}[1]{\def\@github{#1}}
+\newcommand*{\linkedin}[1]{\def\@linkedin{#1}}
+\newcommand*{\driver}[1]{\def\@driver{#1}}
+
+
+\newcounter{titleentrycount} % Compteur pour gérer le séparateur
+\newcommand{\updateTitle}{%
+  \ifbool{isCV}{%
+    \gdef\thetitle{}
+    \defcounter{titleentrycount}{0}
+
+    \notbool{isAnonymous}{%
+      \ifdefined\@author
+        \appto{\thetitle}{\@author}
+        \stepcounter{titleentrycount}%
+      \fi%
+    }%
+
+    \ifdefined\@jobtitle
+      \ifnum\value{titleentrycount}>0\appto{\thetitle}{~~⸱~~}\fi
+      \appto{\thetitle}{\@jobtitle}%
+      \stepcounter{titleentrycount}%
+    \fi%
+
+    \ifdefined\@jobstatus%
+      \ifnum\value{titleentrycount}>0\appto{\thetitle}{~~⸱~~}\fi
+      \appto{\thetitle}{\@jobstatus}%
+      \stepcounter{titleentrycount}%
+    \fi%
+
+    \title{\thetitle}
+  }{}
+}
+
+\def\vhrulefill#1{{\color{borderColor}\leavevmode\leaders\hrule\@height#1\hfill \kern\z@}}
+\def\@applyPartialColor#1#2#3{{\color{accentColor1}#1#2#3}}
+
+\ifbool{isCV}{
+  \renewcommand*{\maketitle}{{%
+    \centering
+    \notbool{isAnonymous}{%
+      \headFirstnameStyle{\@firstname} \headLastnameStyle{\@lastname}\par
+    }
+    \headTitleStyle\@jobtitle
+    \ifdefined\@jobstatus
+      ~~\headTitleStyle{⸱}~~
+      \headTitleStyle\@jobstatus
+    \fi
+    \par
+  }}
+}
+
+\newcommand*{\makePersonalInfo}[1][Informations]{%
+    \notbool{isAnonymous}
+    {
+      \section*{#1}
+      \begin{itemize}[leftmargin=16pt]
+        \ifdefined\@address\item[\textemoji{📍}]\@address\fi
+        \ifdefined\@modile\item[\textemoji{📞}]\@mobile\fi
+        \ifdefined\@email\item[\textemoji{✉️}]\href{mailto:\@email}{\@email}\fi
+        \ifdefined\@linkedin\item[\faLinkedin]\href{https://www.linkedin.com/in/\@linkedin}{\@linkedin}\fi
+        \ifdefined\@github\item[\faGithub]\href{https://github.com/\@github}{\@github}\fi
+        \ifdefined\@driver\item[\faIdCard]\@driver\fi
+    \end{itemize}
+  }{}
+}
+
+\newcommand*{\@cventry}[7][1.42cm]{
+  \removelastskip
+  \begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}l r}%
+    \ifthenelse{\isempty{#4#5}}
+    {\entryTitleStyle{#3} & \entryDateStyle{#2}\\}
+    {%
+      \entryTitleStyle{#3} & \entryDateStyle{#2}\\
+      \entryInstitutionStyle{#4} & \entryLocationStyle{#5}\\
+    }
+  \end{tabular*}%
+  \ifthenelse{\isempty{#6}}{}{
+    \raggedright
+    \entryDescriptionStyle{#6}
+  }
+  \ifthenelse{\isempty{#7}}{}{
+    \vspace{0.25\baselineskip}
+    \raggedright
+    \entryOptionalDescriptionStyle{#7}
+  }
+  \par\vspace{#1}
+}
+
+\newcounter{cventrycount}[section]
+\newcommand*{\cventry}[7][0.75em]{
+  \phantomsection{}
+  \addcontentsline{toc}{subsection}{#2 - #3}
+  \ifnum\value{cventrycount}>0 \bigskip \fi
+  \stepcounter{cventrycount}
+  \@cventry[#1]{#2}{#3}{#4}{#5}{#6}{#7}
+}
+
+\newcounter{cvsubentrycount}[cventrycount]
+\newcommand*{\cvsubentry}[7][.75em]{
+  \phantomsection{}
+  \addcontentsline{toc}{subsubsection}{#2 - #3}
+  \ifnum\value{cvsubentrycount}>0 \medskip \fi
+  \stepcounter{cvsubentrycount}
+  \@cventry[#1]{#2}{#3}{#4}{#5}{#6}{#7}
+}
+
+\newenvironment{cvsubentries}[1][1.5em]{%
+  \begin{list}{}{\setlength{\leftmargin}{#1}}
+    \item[]%
+}{%
+  \end{list}%
+}
+
+\def\section{\@ifstar\unnumberedsection\numberedsection}
+\def\numberedsection{\@ifnextchar[%]
+\numberedsectionwithtwoarguments\numberedsectionwithoneargument}
+\def\unnumberedsection{\@ifnextchar[%]
+\unnumberedsectionwithtwoarguments\unnumberedsectionwithoneargument}
+\def\numberedsectionwithoneargument#1{\numberedsectionwithtwoarguments[#1]{#1}}
+\def\unnumberedsectionwithoneargument#1{\unnumberedsectionwithtwoarguments[#1]{#1}}
+\def\unnumberedsectionwithtwoarguments[#1]#2{%
+  \ifhmode\par\fi
+  \removelastskip
+  \vskip 3ex\goodbreak
+  \phantomsection{}
+  \addcontentsline{toc}{section}{#1}%
+  \begingroup
+  \leavevmode\Large\textbf\raggedright
+  \sectionStyle{#2}~\vhrulefill{0.9pt}
+  \par
+  \endgroup
+  \vskip 2ex\nobreak
+}
+\def\numberedsectionwithtwoarguments[#1]#2{%
+  \ifhmode\par\fi
+  \removelastskip
+  \vskip 3ex\goodbreak
+  \refstepcounter{section}%
+  \phantomsection{}
+  \addcontentsline{toc}{section}{\protect\numberline{\thesection}#1}
+  \begingroup
+  \leavevmode\Large\textbf\raggedright
+  \thesection\quad
+  \sectionStyle{#2}~~\vhrulefill{0.9pt}
+  \par
+  \endgroup
+  \vskip 2ex\nobreak
+}
+
+
+
+

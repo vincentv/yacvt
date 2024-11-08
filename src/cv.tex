@@ -1,0 +1,34 @@
+\DocumentMetadata{pdfversion=2.0,pdfstandard=a-4f,lang=en}
+\documentclass[10pt,a4paper,ragged2e,english]{article}
+
+\usepackage{babel}
+\usepackage{paracol}
+\usepackage[cv]{yacvt}
+
+\author{The}{Doctor}
+\jobtitle{Time Lord~~⸱~~Cosmic Interventionist~~⸱~~Universe Protector}
+\keywords{time travel,interdimensional exploration,alien diplomacy,quantum engineering,cosmic problem-solving}
+
+\address{TARDIS {{\footnotesize\textsl{(Time And Relative Dimensions In Space)}}}}
+\mobile{+44 (TIMEVORTEX) DOCTOR}
+\email{thedoctor@gallifreyan.net}
+\github{timelordtech}
+\linkedin{lasttimelord}
+\driver{Universal Temporal Driving License}
+
+\begin{document}%
+\thispagestyle{empty}
+\maketitle
+\columnratio{0.60}
+\begin{paracol}{2}
+  \input{section/summary}
+  \input{section/experiences}
+  \switchcolumn
+  \makePersonalInfo
+  \input{section/skills}
+  \input{section/education}
+\end{paracol}
+\pagebreak
+\input{section/experiences.older}
+\end{document}
+
