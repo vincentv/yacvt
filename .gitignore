@@ -1,0 +1,20 @@
+## Ignorer les fichiers générés par LaTeX
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.bbl
+*.blg
+*.idx
+*.ind
+*.ilg
+*.xdv
+
+# Ignorer les fichiers PDF générés dans les répertoires de sortie
+tmp/
+out/
