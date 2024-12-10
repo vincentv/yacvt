@@ -10,6 +10,7 @@
 \RequirePackage{fontspec}
 \RequirePackage{enumitem}
 \RequirePackage{fancyhdr}
+\RequirePackage{accsupp}
 \RequirePackage[fixed]{fontawesome5}
 \RequirePackage{xifthen}
 \RequirePackage{xparse}
@@ -236,13 +237,25 @@ Path           = "assets/fonts/"]
     {
       \section*{#1}
       \begin{itemize}[leftmargin=16pt]
-        \ifdefined\@address\item[\textemoji{📍}]\@address\fi
-        \ifdefined\@modile\item[\textemoji{📞}]\@mobile\fi
-        \ifdefined\@email\item[\textemoji{✉️}]\href{mailto:\@email}{\@email}\fi
-        \ifdefined\@linkedin\item[\faLinkedin]\href{https://www.linkedin.com/in/\@linkedin}{\@linkedin}\fi
-        \ifdefined\@github\item[\faGithub]\href{https://github.com/\@github}{\@github}\fi
-        \ifdefined\@driver\item[\faIdCard]\@driver\fi
-    \end{itemize}
+        \ifdefined\@address
+          \item[\BeginAccSupp{method=pdfstringdef,unicode,ActualText={Address}}\textemoji{📍}\EndAccSupp{}]\@address
+        \fi
+        \ifdefined\@mobile
+        \item[\BeginAccSupp{method=pdfstringdef,ActualText={Phone Number}}\textemoji{📞}\EndAccSupp{}]\@mobile
+        \fi
+        \ifdefined\@email
+        \item[\BeginAccSupp{method=pdfstringdef,ActualText={Email}}\textemoji{✉️}\EndAccSupp{}]\href{mailto:\@email}{\@email}
+        \fi
+        \ifdefined\@linkedin
+        \item[\BeginAccSupp{method=pdfstringdef,ActualText={LinkedIn}}\faLinkedin\EndAccSupp{}]\href{https://www.linkedin.com/in/\@linkedin}{\@linkedin}
+        \fi
+        \ifdefined\@github
+        \item[\BeginAccSupp{method=pdfstringdef,ActualText={GitHub Profile}}\faGithub\EndAccSupp{}]\href{https://github.com/\@github}{\@github}
+        \fi
+        \ifdefined\@driver
+        \item[\BeginAccSupp{method=pdfstringdef,ActualText={Driver's License}}\faIdCard\EndAccSupp{}]\@driver
+        \fi
+      \end{itemize}
   }{}
 }
 
@@ -328,7 +341,3 @@ Path           = "assets/fonts/"]
   \endgroup
   \vskip 2ex\nobreak
 }
-
-
-
-
